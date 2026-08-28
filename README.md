@@ -115,26 +115,13 @@ papers/longbench.md
 Evaluates model capabilities on extremely long inputs.
 papers/infinitebench.md
 
-Repository Structure
-.
-├── README.md
-├── paper/
-│   └── context-window-degradation.md
-├── audit/
-│   └── citation-integrity-audit.md
-└── papers/
-    ├── long-context/
-    ├── context-degradation/
-    ├── long-document-qa/
-    ├── research-synthesis/
-    ├── rag/
-    └── evaluation/
 
-Research Focus
+
+## Research Focus
 
 The central research question of this repository is:
 
-How does increasing context length affect an LLM's ability to retrieve, reason over, and synthesize evidence from long research documents?
+#### How does increasing context length affect an LLM's ability to retrieve, reason over, and synthesize evidence from long research documents?
 
 The repository particularly focuses on the relationship between:
 
