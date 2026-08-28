@@ -1,21 +1,21 @@
 # Context-Window Degradation and Its Impact on Long-Document Research Synthesis
-Short Description
+## Short Description
 
 This repository investigates context-window degradation in large language models (LLMs) when processing and synthesizing information from long documents or large collections of documents. It focuses on how increasing context length can affect information retrieval, reasoning, factual consistency, and the quality of research synthesis. The repository provides an AI-assisted research paper, a citation integrity audit, and a curated collection of relevant research papers.
 
-Table of Contents
+## Table of Contents
 Topic Overview
-AI-Assisted Research Paper
-Citation Integrity Audit
-Curated Research Papers
-1. Long-Context Language Models
-2. Context-Window Degradation
-3. Long-Document Question Answering and Retrieval
-4. Long-Document Research and Synthesis
-5. Retrieval-Augmented Generation
-6. Evaluation and Benchmarking
-Repository Structure
-Topic Overview
+- AI-Assisted Research Paper
+- Citation Integrity Audit
+- Curated Research Papers
+   - 1. Long-Context Language Models
+   - 2. Context-Window Degradation
+   - 3. Long-Document Question Answering and Retrieval
+   - 4. Long-Document Research and Synthesis
+   - 5. Retrieval-Augmented Generation
+   - 6. Evaluation and Benchmarking
+- Repository Structure
+## Topic Overview
 
 Large language models are increasingly capable of processing very long contexts, making them attractive for research tasks involving books, academic papers, legal documents, technical reports, and collections of evidence. However, a larger context window does not necessarily mean that a model can use all information within that window equally well. Research has identified problems such as the “lost in the middle” phenomenon, where information located in the middle of a long context may be used less effectively than information near the beginning or end.
 
