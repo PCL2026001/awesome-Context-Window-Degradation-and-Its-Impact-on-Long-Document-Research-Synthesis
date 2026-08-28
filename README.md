@@ -23,95 +23,95 @@ This creates an important challenge for long-document research synthesis. A mode
 
 Current research therefore explores several directions, including longer-context architectures, improved attention mechanisms, retrieval-augmented generation (RAG), context compression, hierarchical summarization, document chunking, and specialized long-context evaluation benchmarks. Understanding context-window degradation is particularly important for research applications because simply placing more documents into a model's context may increase the amount of available information while simultaneously making effective evidence utilization more difficult.
 
-AI-Assisted Research Paper
-Context-Window Degradation and Its Impact on Long-Document Research Synthesis
+## AI-Assisted Research Paper
+## Context-Window Degradation and Its Impact on Long-Document Research Synthesis
 
-Abstract:
+##### Abstract:
 This paper examines how the increasing size of language-model context windows affects the reliability of long-document research synthesis. It reviews evidence concerning positional information loss, attention limitations, retrieval failures, and reasoning degradation in long contexts. The paper further analyzes how these limitations influence evidence integration, factual consistency, citation accuracy, and the quality of synthesized research outputs. Finally, it discusses mitigation strategies including retrieval-augmented generation, context selection, hierarchical summarization, context compression, and long-context evaluation.
 
-Paper:
+##### Paper:
 paper/context-window-degradation.md
 
-Citation Integrity Audit
+## Citation Integrity Audit
 
 All references used in the research paper and curated collection were checked for bibliographic accuracy and relevance. Claims were compared against the original research sources where possible, and citations were reviewed to ensure that they support the claims for which they are provided.
 
-Citation Audit:
+##### Citation Audit:
 audit/citation-integrity-audit.md
 
 Curated Research Papers
 
 The papers below are organized according to the main research dimensions of context-window degradation and long-document research synthesis.
 
-1. Long-Context Language Models
+## 1. Long-Context Language Models
 
 Research on architectures, training approaches, and techniques that enable language models to process substantially longer contexts.
 
-Longformer: The Long-Document Transformer
+- Longformer: The Long-Document Transformer
 Introduces an attention mechanism designed to efficiently process long documents.
 papers/longformer.md
 
-LongNet: Scaling Transformers to 1,000,000,000 Tokens
+- LongNet: Scaling Transformers to 1,000,000,000 Tokens
 Investigates attention mechanisms for extremely long sequences.
 papers/longnet.md
 
-2. Context-Window Degradation
+## 2. Context-Window Degradation
 
 Research directly examining whether models effectively use information as context length increases.
 
-Lost in the Middle: How Language Models Use Long Contexts
+- Lost in the Middle: How Language Models Use Long Contexts
 Studies how language models can struggle to retrieve relevant information positioned in the middle of long contexts.
 papers/lost-in-the-middle.md
 
-NoLiMa: Long-Context Evaluation Beyond Literal Matching
+- NoLiMa: Long-Context Evaluation Beyond Literal Matching
 Examines long-context performance under conditions requiring more than simple lexical matching.
 papers/nolima.md
 
-3. Long-Document Question Answering and Retrieval
+## 3. Long-Document Question Answering and Retrieval
 
 Research evaluating the ability of models to locate and reason over information distributed throughout long documents.
 
-Qasper: A Dataset for Question Answering over Scientific Papers
+- Qasper: A Dataset for Question Answering over Scientific Papers
 Provides a benchmark for answering questions requiring information from scientific papers.
 papers/qasper.md
 
-NarrativeQA: A Dataset for Long Story Comprehension
+-NarrativeQA: A Dataset for Long Story Comprehension
 Evaluates comprehension and question answering over long narrative documents.
 papers/narrativeqa.md
 
-4. Long-Document Research and Synthesis
+## 4. Long-Document Research and Synthesis
 
 Research relevant to summarization, multi-document reasoning, and synthesizing information across large collections.
 
-BART / PEGASUS and Long-Document Summarization Research
+- BART / PEGASUS and Long-Document Summarization Research
 Provides foundations for neural summarization and motivates approaches for handling documents exceeding standard context limitations.
 papers/long-document-summarization.md
 
-Multi-document Summarization Research
+- Multi-document Summarization Research
 Investigates how information from multiple sources can be combined into a coherent summary.
 papers/multi-document-summarization.md
 
-5. Retrieval-Augmented Generation
+## 5. Retrieval-Augmented Generation
 
 Research on retrieving relevant information instead of relying exclusively on the model's full context window.
 
-Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
+- Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
 Introduces RAG as a method for combining language generation with external retrieval.
 papers/rag.md
 
-REALM: Retrieval-Augmented Language Model Pre-Training
+- REALM: Retrieval-Augmented Language Model Pre-Training
 Explores retrieval as part of language-model pre-training for knowledge-intensive tasks.
 papers/realm.md
 
-6. Evaluation and Benchmarking
+## 6. Evaluation and Benchmarking
 
 Benchmarks and evaluation methodologies for measuring long-context retrieval, reasoning, and synthesis.
 
-LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding
+- LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding
 Evaluates long-context understanding across multiple tasks.
 papers/longbench.md
 
-InfiniteBench: Extending Long Context Evaluation Beyond 100K Tokens
+- InfiniteBench: Extending Long Context Evaluation Beyond 100K Tokens
 Evaluates model capabilities on extremely long inputs.
 papers/infinitebench.md
 
