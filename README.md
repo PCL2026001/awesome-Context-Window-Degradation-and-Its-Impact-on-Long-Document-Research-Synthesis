@@ -1,4 +1,4 @@
-#Context-Window Degradation and Its Impact on Long-Document Research Synthesis
+# Context-Window Degradation and Its Impact on Long-Document Research Synthesis
 Short Description
 
 This repository investigates context-window degradation in large language models (LLMs) when processing and synthesizing information from long documents or large collections of documents. It focuses on how increasing context length can affect information retrieval, reasoning, factual consistency, and the quality of research synthesis. The repository provides an AI-assisted research paper, a citation integrity audit, and a curated collection of relevant research papers.
