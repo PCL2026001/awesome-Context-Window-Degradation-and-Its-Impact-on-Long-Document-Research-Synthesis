@@ -1,128 +1,184 @@
-# Context-Window Degradation and Its Impact on Long-Document Research Synthesis
-## Short Description
+# Awesome Context-Window Degradation and Long-Document Research Synthesis
 
-This repository investigates context-window degradation in large language models (LLMs) when processing and synthesizing information from long documents or large collections of documents. It focuses on how increasing context length can affect information retrieval, reasoning, factual consistency, and the quality of research synthesis. The repository provides an AI-assisted research paper, a citation integrity audit, and a curated collection of relevant research papers.
+> A curated collection of verified research papers, datasets, tools, GitHub implementations, tutorials, and academic resources related to **Context-Window Degradation and Long-Document Research Synthesis in Large Language Models (LLMs).**
+
+This repository was created as part of the **AI Tools for Research** laboratory activity. It extends an AI-assisted research paper with a systematic citation-integrity audit and a curated collection of scholarly resources for researchers and students interested in long-context reasoning.
+
+---
 
 ## Table of Contents
-Topic Overview
-- AI-Assisted Research Paper
-- Citation Integrity Audit
-- Curated Research Papers
-   - 1. Long-Context Language Models
-   - 2. Context-Window Degradation
-   - 3. Long-Document Question Answering and Retrieval
-   - 4. Long-Document Research and Synthesis
-   - 5. Retrieval-Augmented Generation
-   - 6. Evaluation and Benchmarking
-- Repository Structure
-## Topic Overview
 
-Large language models are increasingly capable of processing very long contexts, making them attractive for research tasks involving books, academic papers, legal documents, technical reports, and collections of evidence. However, a larger context window does not necessarily mean that a model can use all information within that window equally well. Research has identified problems such as the “lost in the middle” phenomenon, where information located in the middle of a long context may be used less effectively than information near the beginning or end.
+- [Overview](#overview)
+- [AI-Assisted Research Paper](#ai-assisted-research-paper)
+- [Citation Integrity Audit](#citation-integrity-audit)
+- [Curated Research Papers](#curated-research-papers)
+- [Datasets](#datasets)
+- [Tools and Libraries](#tools-and-libraries)
+- [GitHub Implementations](#github-implementations)
+- [Tutorials and Learning Resources](#tutorials-and-learning-resources)
+- [Repository Structure](#repository-structure)
+- [License](#license)
 
-This creates an important challenge for long-document research synthesis. A model may receive hundreds of pages of relevant material but still overlook important evidence, incorrectly connect information, or produce a synthesis that depends disproportionately on the position of information within the context. These problems can affect factual accuracy, citation completeness, reasoning quality, and the reproducibility of AI-assisted research.
+---
 
-Current research therefore explores several directions, including longer-context architectures, improved attention mechanisms, retrieval-augmented generation (RAG), context compression, hierarchical summarization, document chunking, and specialized long-context evaluation benchmarks. Understanding context-window degradation is particularly important for research applications because simply placing more documents into a model's context may increase the amount of available information while simultaneously making effective evidence utilization more difficult.
+## Overview
+
+Large Language Models (LLMs) have evolved from processing a few thousand tokens to handling hundreds of thousands or even millions of tokens within a single context window. While these larger context windows enable models to process books, research papers, legal documents, and code repositories, recent research shows that **maximum context size is not equivalent to effective context utilization**.
+
+A major challenge is **context-window degradation**, where models struggle to retrieve and reason over information distributed throughout long inputs. One well-known manifestation is the **"Lost in the Middle"** phenomenon, where relevant information placed in the middle of long contexts is recalled less reliably than information near the beginning or end.
+
+This repository focuses on:
+
+- Long-context reasoning.
+- Evidence retrieval in long documents.
+- Research synthesis using LLMs.
+- Retrieval-Augmented Generation (RAG).
+- Context compression techniques.
+- Hierarchical document synthesis.
+- Benchmarking long-context performance.
+- Citation integrity in AI-assisted academic research.
+
+The repository combines foundational literature, recent advances (2024–2026), datasets, implementations, tutorials, and verified scholarly references.
+
+---
 
 ## AI-Assisted Research Paper
-## Context-Window Degradation and Its Impact on Long-Document Research Synthesis
 
-##### Abstract:
-This paper examines how the increasing size of language-model context windows affects the reliability of long-document research synthesis. It reviews evidence concerning positional information loss, attention limitations, retrieval failures, and reasoning degradation in long contexts. The paper further analyzes how these limitations influence evidence integration, factual consistency, citation accuracy, and the quality of synthesized research outputs. Finally, it discusses mitigation strategies including retrieval-augmented generation, context selection, hierarchical summarization, context compression, and long-context evaluation.
+**Paper Title**
 
-##### Paper:
-paper/context-window-degradation.md
+*Context-Window Degradation and Its Impact on Long-Document Research Synthesis*
+
+The paper investigates how increasing context length affects retrieval, reasoning, evidence integration, hallucination, and academic research synthesis in LLMs. It also discusses LongBench, RULER, retrieval augmentation, context compression, hierarchical synthesis, and evidence-centered reasoning.
+
+📄 [View Paper](paper/AI_Assisted_Research_Paper.pdf)
+
+---
 
 ## Citation Integrity Audit
 
-All references used in the research paper and curated collection were checked for bibliographic accuracy and relevance. Claims were compared against the original research sources where possible, and citations were reviewed to ensure that they support the claims for which they are provided.
+A systematic audit was conducted on AI-generated references using:
 
-##### Citation Audit:
-audit/citation-integrity-audit.md
+- ACL Anthology
+- arXiv
+- Crossref
+- Semantic Scholar
+- Google Scholar
+- Wiley Online Library
+- Official conference proceedings
 
-Curated Research Papers
+### Audit Summary
 
-The papers below are organized according to the main research dimensions of context-window degradation and long-document research synthesis.
+| Measure | Result |
+|---------|--------|
+| References Generated | 11 |
+| References Audited | 10 |
+| Verified References | 10 |
+| Wrong Metadata | 0 |
+| Fabricated References | 0 |
+| Identifier Mismatches | 0 |
+| Authenticity Score | **100/100** |
 
-## 1. Long-Context Language Models
+📄 [View Citation Audit](citation-audit/Citation_Integrity_Audit.pdf)
 
-Research on architectures, training approaches, and techniques that enable language models to process substantially longer contexts.
+---
 
-- Longformer: The Long-Document Transformer
-Introduces an attention mechanism designed to efficiently process long documents.
-papers/longformer.md
+## Curated Research Papers
 
-- LongNet: Scaling Transformers to 1,000,000,000 Tokens
-Investigates attention mechanisms for extremely long sequences.
-papers/longnet.md
+This repository includes **20+ verified scholarly papers**, organized into:
 
-## 2. Context-Window Degradation
+- Survey Papers
+- Foundational Papers
+- Long-Context Benchmarks
+- Context Compression
+- Retrieval-Augmented Generation
+- Hierarchical Reasoning
+- Recent Advances (2025–2026)
 
-Research directly examining whether models effectively use information as context length increases.
+➡️ Full list available in [references/references.md](references/references.md)
 
-- Lost in the Middle: How Language Models Use Long Contexts
-Studies how language models can struggle to retrieve relevant information positioned in the middle of long contexts.
-papers/lost-in-the-middle.md
+---
 
-- NoLiMa: Long-Context Evaluation Beyond Literal Matching
-Examines long-context performance under conditions requiring more than simple lexical matching.
-papers/nolima.md
+## Datasets
 
-## 3. Long-Document Question Answering and Retrieval
+Datasets for evaluating long-context understanding include:
 
-Research evaluating the ability of models to locate and reason over information distributed throughout long documents.
+| Dataset | Purpose |
+|---------|----------|
+| LongBench | Multitask long-context benchmark |
+| RULER Benchmark | Context-length stress testing |
+| LooGLE | Long document reasoning |
+| NarrativeQA | Long narrative comprehension |
+| HotpotQA | Multi-hop reasoning |
 
-- Qasper: A Dataset for Question Answering over Scientific Papers
-Provides a benchmark for answering questions requiring information from scientific papers.
-papers/qasper.md
+➡️ Details available in [datasets/datasets.md](datasets/datasets.md)
 
--NarrativeQA: A Dataset for Long Story Comprehension
-Evaluates comprehension and question answering over long narrative documents.
-papers/narrativeqa.md
+---
 
-## 4. Long-Document Research and Synthesis
+## Tools and Libraries
 
-Research relevant to summarization, multi-document reasoning, and synthesizing information across large collections.
+Useful frameworks include:
 
-- BART / PEGASUS and Long-Document Summarization Research
-Provides foundations for neural summarization and motivates approaches for handling documents exceeding standard context limitations.
-papers/long-document-summarization.md
+- Hugging Face Transformers
+- LangChain
+- LlamaIndex
+- Haystack
+- Sentence Transformers
+- FAISS
+- vLLM
+- FlashAttention
 
-- Multi-document Summarization Research
-Investigates how information from multiple sources can be combined into a coherent summary.
-papers/multi-document-summarization.md
+➡️ Details available in [tools/tools.md](tools/tools.md)
 
-## 5. Retrieval-Augmented Generation
+---
 
-Research on retrieving relevant information instead of relying exclusively on the model's full context window.
+## GitHub Implementations
 
-- Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
-Introduces RAG as a method for combining language generation with external retrieval.
-papers/rag.md
+Carefully selected repositories include implementations of:
 
-- REALM: Retrieval-Augmented Language Model Pre-Training
-Explores retrieval as part of language-model pre-training for knowledge-intensive tasks.
-papers/realm.md
+- RAG pipelines.
+- LongBench evaluation.
+- RULER benchmark.
+- LLMLingua prompt compression.
+- FlashAttention.
+- LlamaIndex.
+- Haystack.
 
-## 6. Evaluation and Benchmarking
+➡️ Details available in [implementations/github-repositories.md](implementations/github-repositories.md)
 
-Benchmarks and evaluation methodologies for measuring long-context retrieval, reasoning, and synthesis.
+---
 
-- LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding
-Evaluates long-context understanding across multiple tasks.
-papers/longbench.md
+## Tutorials and Learning Resources
 
-- InfiniteBench: Extending Long Context Evaluation Beyond 100K Tokens
-Evaluates model capabilities on extremely long inputs.
-papers/infinitebench.md
+Includes:
 
+- Stanford CS324.
+- Hugging Face NLP Course.
+- LangChain Documentation.
+- LlamaIndex Documentation.
+- OpenAI Prompt Engineering Guide.
+- ACL Anthology resources.
+- DeepLearning.AI RAG course.
 
+---
 
-## Research Focus
+## Repository Structure
 
-The central research question of this repository is:
+```text
+awesome-context-window-degradation/
+│── README.md
+│── paper/
+│── citation-audit/
+│── references/
+│── datasets/
+│── tools/
+│── implementations/
+│── LICENSE
+```
 
-#### How does increasing context length affect an LLM's ability to retrieve, reason over, and synthesize evidence from long research documents?
+---
 
-The repository particularly focuses on the relationship between:
+## License
 
-Context length → information retrieval → reasoning → evidence integration → citation accuracy → research synthesis quality
+This repository is released under the **MIT License**.
+
+**Note:** Only the AI-assisted research paper and citation audit created by the repository author are included as PDFs. All other scholarly works are linked through official publisher pages, DOI records, ACL Anthology, arXiv, or other authorized sources.
