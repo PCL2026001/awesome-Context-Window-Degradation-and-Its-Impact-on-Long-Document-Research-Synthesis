@@ -1,0 +1,623 @@
+% ============================================================
+%  PCL-02 Implementation Paper
+%  Title: Measuring and Mitigating Context-Window Degradation
+%         in Long-Document Research Synthesis: 
+%         A Controlled Retrieval Experiment
+%  Author: Mayank Waila
+%  Institute: Indian Institute of Information Technology Allahabad
+% ============================================================
+
+\documentclass[sigconf,nonacm]{acmart}
+
+% ── packages ─────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{subcaption}
+
+% ── code style ───────────────────────────────────────────────────────────────
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  language=Python
+}
+
+% ── ACM metadata ─────────────────────────────────────────────────────────────
+\acmJournal{PACMPL}
+
+\begin{document}
+
+\title{Measuring and Mitigating Context-Window Degradation in\\
+Long-Document Research Synthesis:\\
+A Controlled Retrieval Experiment}
+
+\author{Mayank Waila}
+\affiliation{%
+  \institution{Indian Institute of Information Technology Allahabad}
+  \city{Prayagraj}
+  \country{India}}
+\email{mayankwaila@iiita.ac.in}
+
+\begin{abstract}
+Large language models (LLMs) are increasingly deployed for research synthesis
+over long documents, yet their performance degrades when relevant evidence is
+positioned away from the context boundaries—the ``lost-in-the-middle'' phenomenon
+documented by Liu \emph{et al.}~\cite{liu2023lost}.
+This paper presents a controlled, reproducible experimental investigation of
+context-window degradation in a long-document retrieval task.
+We implement a U-shaped attention-weight simulation calibrated to match
+empirically observed LLM behaviour, then compare four retrieval strategies:
+(1)~full-context single-pass retrieval (Baseline~1), (2)~non-overlapping chunked
+sequential retrieval (Baseline~2), (3)~overlapping chunked retrieval (Baseline~3),
+and (4)~a proposed two-pass hierarchical retrieval method.
+Over 200 independent trials per condition across five evidence-position levels
+(0\%, 25\%, 50\%, 75\%, 100\% into a 20-chunk document), we find that the full-context
+baseline exhibits a \textbf{10 percentage-point recall drop} at non-boundary positions
+(Recall@1 = 0.900--0.905 vs.\ 1.000 at the boundaries), while all three
+chunking-based methods recover full recall at every position.
+An ablation over attention-decay strength confirms that degradation is robust
+above a strength threshold of 1.0, and plateaus thereafter.
+Our code, configuration, and raw results are released in a public repository,
+enabling full reproduction of all reported numbers.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+  <concept>
+    <concept_id>10010147.10010178.10010187</concept_id>
+    <concept_desc>Computing methodologies~Natural language processing</concept_desc>
+    <concept_significance>500</concept_significance>
+  </concept>
+  <concept>
+    <concept_id>10002951.10003317.10003338</concept_id>
+    <concept_desc>Information systems~Information retrieval</concept_desc>
+    <concept_significance>300</concept_significance>
+  </concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Computing methodologies~Natural language processing}
+\ccsdesc[300]{Information systems~Information retrieval}
+
+\keywords{context-window degradation, long-context LLMs,
+  retrieval-augmented generation, hierarchical retrieval,
+  lost-in-the-middle, research synthesis}
+
+\maketitle
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The capacity of large language models (LLMs) to process tens of thousands of
+tokens has opened compelling applications in academic research synthesis, where
+a system must traverse long survey articles, multi-document corpora, or book-length
+texts to locate, compare, and integrate evidence~\cite{surveylong2024}.
+A naïve view holds that wider context windows eliminate the retrieval problem
+entirely: if the model can read the whole document, it should find any piece of
+evidence within it.
+Empirical work has repeatedly refuted this view.
+Liu \emph{et al.}~\cite{liu2023lost} showed that GPT-3.5 and Claude~1.3 exhibit
+substantially lower accuracy when the relevant passage is placed in the
+\emph{middle} of a long input, producing the now well-known \emph{lost-in-the-middle}
+phenomenon.
+Bai \emph{et al.}~\cite{bai2024longbench} and Hsieh \emph{et al.}~\cite{hsieh2024ruler}
+independently confirmed and extended these findings, demonstrating that
+long-context performance can degrade even when the full text fits within a
+model's nominal token budget.
+
+My previous literature review (Paper~1) synthesised this body of work and
+identified context-window degradation as a central reliability problem for
+long-document research synthesis, noting that the phenomenon had been characterised
+but not yet systematically addressed under a controlled, apples-to-apples
+retrieval protocol with open, reproducible code.
+This paper is the direct continuation of that review.
+It narrows the scope to a single tractable research question (Section~\ref{sec:rq}),
+implements four retrieval methods in runnable Python code (Section~\ref{sec:methods}),
+and reports all numbers from actual experimental runs (Section~\ref{sec:results}).
+
+\subsection{Research Question and Hypothesis}
+\label{sec:rq}
+
+\begin{quote}
+\textbf{RQ:} \emph{Does the positional placement of target evidence within a
+long document significantly degrade retrieval accuracy under a simulated LLM
+attention model, and can chunked or hierarchical retrieval strategies recover
+this loss?}
+\end{quote}
+
+\noindent\textbf{H1 (Degradation):} Retrieval recall in a full-context single-pass
+strategy will be significantly lower when evidence is placed in the middle of
+the document compared to the boundaries.
+
+\noindent\textbf{H2 (Mitigation):} Chunked and hierarchical retrieval strategies
+that subdivide the context will maintain consistently high recall regardless of
+evidence position, because the effective window over which attention must span
+is reduced in each retrieval call.
+
+\subsection{Contributions}
+
+\begin{enumerate}
+  \item A reproducible simulation framework that operationalises the
+        lost-in-the-middle phenomenon via a parameterised attention-decay curve.
+  \item A controlled comparison of four retrieval strategies across five
+        evidence positions, with 200 independent trials per condition.
+  \item An ablation study over attention-decay strength, isolating the
+        threshold at which degradation becomes harmful.
+  \item Full open-source release: code, configuration, and raw CSV results.
+\end{enumerate}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Background and Related Work}
+\label{sec:background}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{The Lost-in-the-Middle Phenomenon}
+
+Liu \emph{et al.}~\cite{liu2023lost} evaluated GPT-3.5-Turbo and Claude~1.3 on
+multi-document question answering while systematically varying the position of
+the gold document within the input.
+They found a U-shaped performance curve: accuracy was highest when the relevant
+document appeared first or last, and dropped by up to 20 percentage points when
+it appeared in the middle of a 20-document context.
+This positional sensitivity was robust across both models and both tasks
+(QA and key-value retrieval).
+
+\subsection{Long-Context Benchmarks}
+
+LongBench~\cite{bai2024longbench} and RULER~\cite{hsieh2024ruler} provide
+standardised evaluation suites that reveal similar patterns at the benchmark
+scale.
+LongBench includes six categories of long-context tasks including single-document
+QA, multi-document QA, and summarisation.
+RULER probes recall of needle-in-a-haystack facts, multi-key retrieval, and
+chain-of-reasoning tasks up to 128k tokens.
+Both suites show that models with higher nominal context limits do not
+proportionally outperform smaller-window models on retrieval-intensive sub-tasks.
+
+\subsection{Retrieval-Augmented Generation (RAG)}
+
+RAG~\cite{lewis2020rag} was originally proposed to inject retrieved document
+chunks into a generation context, sidestepping the long-context problem entirely.
+Chunked retrieval creates a short, focused prompt for each generation call,
+effectively resetting the attention window.
+Hierarchical and coarse-to-fine variants have been explored in the literature
+but rarely evaluated with controlled positional benchmarks~\cite{gao2023retrieval}.
+
+\subsection{Context Compression}
+
+LLMLingua~\cite{jiang2023llmlingua} and similar approaches compress the prompt
+prior to model ingestion, retaining a higher information density per token.
+While promising, compression methods risk dropping critical evidence,
+particularly when that evidence uses rare terminology—precisely the signal
+tokens we use in our synthetic experiment.
+
+\subsection{Position of This Work}
+
+The body of work above identifies and characterises the problem but leaves open
+a systematic, controlled comparison of simple chunking strategies against the
+full-context baseline under a consistent evaluation protocol.
+This paper fills that gap.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Experimental Setup}
+\label{sec:methods}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Synthetic Document Generation}
+\label{sec:data}
+
+We construct synthetic long documents to allow precise control over evidence
+placement—a capability unavailable in natural corpora where document structure
+confounds positional effects.
+
+Each document consists of $C = 20$ text chunks of 60 words each.
+One chunk (the \emph{evidence chunk}) contains three unique signal tokens
+(\texttt{SIGNAL\_X}, \texttt{SIGNAL\_Y}, \texttt{SIGNAL\_Z}) not present in
+the distractor vocabulary.
+All remaining chunks contain random tokens drawn from a 800-word distractor vocabulary.
+The query consists of two of the three signal tokens.
+
+Evidence placement is controlled by the parameter $p \in \{0, 5, 10, 15, 19\}$,
+corresponding to positions 0\%, 25\%, 50\%, 75\%, and 100\% into the document
+(i.e., Start, Early, Middle, Late, End).
+For each position and method, $T = 200$ independent trials are run with distinct
+random seeds, yielding a total of $4 \times 5 \times 200 = 4{,}000$ retrievals.
+All random seeds are stored in \path{config_v2.json} and reproduced exactly
+from the seed formula: $\text{seed}(p_i, t) = 42 + p_i \times 10{,}000 + t$.
+
+\subsection{Attention-Decay Simulation}
+\label{sec:attn}
+
+Since we cannot run a full LLM in a compute-limited setting without API access,
+we simulate the primacy-recency attention curve empirically observed by
+Liu \emph{et al.}~\cite{liu2023lost}.
+Following their reported ~20 pp drop at the middle, we parameterise:
+
+\begin{equation}
+  w(p, N, \lambda) = \max\!\left(0.05,\; 1 - \lambda \cdot \sin^2\!\!\left(\frac{\pi p}{N-1}\right)\right)
+  \label{eq:attn}
+\end{equation}
+
+\noindent where $p$ is the chunk index (0-indexed), $N$ is the total number of
+chunks in scope, and $\lambda$ is the \emph{decay strength} hyper-parameter.
+At $p = 0$ and $p = N-1$ (boundaries), $w = 1.0$.
+At $p = \lfloor(N-1)/2\rfloor$ (middle), $w = 1 - \lambda$.
+We set $\lambda = 1.8$ for the main experiments, which produces a ~10 pp
+performance drop at Early/Middle positions (matching the lower end of Liu \emph{et al.}'s
+reported range, appropriate for our bag-of-words retriever baseline rather than
+a full LLM).
+
+The final score for chunk $i$ is:
+\begin{equation}
+  s_i = \text{BoW}(c_i, q) \cdot w(i, N, \lambda) + \varepsilon, \quad \varepsilon \sim \mathcal{N}(0, 0.015^2)
+  \label{eq:score}
+\end{equation}
+
+\noindent where $\text{BoW}(c, q)$ is the token-overlap recall score
+(query tokens found in chunk $c$, divided by total query tokens), and $\varepsilon$
+is Gaussian noise simulating stochastic LLM behaviour.
+
+\subsection{Retrieval Methods}
+\label{sec:methods-detail}
+
+We compare four retrieval strategies:
+
+\paragraph{Baseline 1 — Full-Context (FC-B1).}
+All $C = 20$ chunks are scored simultaneously using Equation~\ref{eq:score} with the
+global window size $N = C$.
+This is the ``single-pass long context'' baseline corresponding to naïve full-document
+ingestion.
+\emph{Expected weakness:} chunks in the middle receive low $w(\cdot)$ weights,
+causing the model to miss central evidence.
+
+\paragraph{Baseline 2 — Chunked Sequential (CS-B2).}
+The document is processed in non-overlapping windows of size $W = 5$.
+Within each window, attention decay is applied \emph{locally} (positions 0–4
+within the window) with strength $\lambda' = 0.8$.
+The highest-scoring chunk across all windows is returned.
+\emph{Hypothesis:} smaller windows reduce degradation at the cost of potential
+boundary artefacts.
+
+\paragraph{Baseline 3 — Overlapping Chunks (OC-B3).}
+Like CS-B2 but with a stride of 2 (windows overlap by half), ensuring that no
+chunk appears only in the middle of its window.
+This directly addresses the ``chunk-boundary problem'' where evidence straddles
+two non-overlapping windows.
+
+\paragraph{Proposed — Hierarchical Two-Pass (H2P).}
+The proposed method operates in two stages:
+
+\begin{enumerate}
+  \item \textbf{Coarse pass:} Each non-overlapping window is represented by the
+    maximum BoW score of its first 12-token chunk summaries.
+    The top 2 windows are selected.
+  \item \textbf{Fine pass:} Chunks within the selected windows are re-scored
+    with a much lower decay strength ($\lambda_\text{fine} = 0.25$), simulating
+    a short, focused context where positional effects are minimal.
+\end{enumerate}
+
+The two-pass design is motivated by the intuition that a coarse filter can
+identify \emph{candidate regions} without full attention, after which a short,
+focused re-read applies nearly uniform attention.
+
+\subsection{Metrics}
+
+We report:
+\begin{itemize}
+  \item \textbf{Recall@1}: proportion of trials in which the top-ranked chunk is
+    the evidence chunk.
+  \item \textbf{Mean F1}: average token-overlap F1 between the retrieved chunk
+    and the evidence chunk (1.0 for a correct retrieval, 0.0 otherwise, since
+    signal tokens are unique).
+\end{itemize}
+
+\subsection{Reproducibility}
+
+All experiments are implemented in a single Python file
+(\path{experiment_v2.py}) with no external dependencies beyond the Python
+standard library. The file is 170 lines of commented code.
+Configuration (seeds, chunk counts, positions, trials) is serialised to
+\path{config_v2.json}. Outputs are written to \path{results_v2.csv}
+and~\path{ablation_strength.csv}. Running \path{python3 experiment_v2.py}
+from the repository root reproduces all numbers in this paper exactly.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Results}
+\label{sec:results}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Main Results: Recall@1 by Position and Method}
+
+Table~\ref{tab:main} reports Recall@1 for all four methods across five evidence
+positions, based on $T = 200$ trials per cell.
+
+\begin{table}[t]
+  \centering
+  \caption{Recall@1 (200 trials per cell, seed 42). Bold = best per row.
+           FC-B1: Full-Context; CS-B2: Chunked Sequential;
+           OC-B3: Overlapping Chunks; H2P: Hierarchical Two-Pass.}
+  \label{tab:main}
+  \begin{tabular}{lcccc}
+    \toprule
+    Evidence Position & FC-B1 & CS-B2 & OC-B3 & H2P \\
+    \midrule
+    Start (0\%)       & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+    Early (25\%)      & 0.900 & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+    Middle (50\%)     & 0.905 & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+    Late  (75\%)      & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+    End   (100\%)     & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+    \midrule
+    \textbf{Avg.}     & 0.961 & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Findings.}
+H1 is confirmed: the full-context baseline (FC-B1) exhibits a statistically
+meaningful recall drop of approximately 10 percentage points at the Early (25\%)
+and Middle (50\%) positions (Recall@1 = 0.900 and 0.905, respectively), compared
+to perfect recall at the boundaries.
+This replicates the direction of the effect documented by Liu \emph{et al.}~\cite{liu2023lost}
+in controlled conditions.
+
+H2 is also confirmed: all three chunking-based strategies (CS-B2, OC-B3, H2P)
+achieve Recall@1 = 1.000 at every position.
+Subdividing the retrieval context into smaller windows eliminates the positional
+degradation observed in the full-context condition.
+
+\paragraph{Why does the full-context baseline still score 0.90 rather than lower?}
+Under our simulation, the BoW signal is strong (3 unique tokens not in the
+distractor vocabulary), so the base score is 1.0 for the evidence chunk and 0.0
+for all distractors.
+The attention-decay weight at the middle position is approximately $1 - 1.8 = -0.8$,
+clipped to 0.05.
+Gaussian noise $\mathcal{N}(0, 0.015^2)$ then occasionally causes a distractor
+to outscore the evidence chunk—accounting for the ~10\% error rate.
+In a real LLM where distractors also contribute partial token overlaps, the gap
+would be expected to be larger, consistent with the 20 pp drops reported by
+Liu \emph{et al.}\ for GPT-3.5.
+
+\subsection{Ablation: Attention-Decay Strength}
+
+Table~\ref{tab:ablation} shows how Recall@1 at the Middle (50\%) position varies
+as a function of $\lambda$ in Equation~\ref{eq:attn}.
+
+\begin{table}[t]
+  \centering
+  \caption{Ablation: Recall@1 of FC-B1 at Middle (50\%) vs.\ attention-decay
+           strength $\lambda$ (200 trials, seed 99999).}
+  \label{tab:ablation}
+  \begin{tabular}{cc}
+    \toprule
+    Decay strength $\lambda$ & Recall@1 \\
+    \midrule
+    0.0 (uniform attention) & 1.000 \\
+    0.5                     & 1.000 \\
+    1.0                     & 0.920 \\
+    1.5                     & 0.920 \\
+    1.8 (main experiment)   & 0.920 \\
+    2.0                     & 0.920 \\
+    2.5                     & 0.920 \\
+    3.0                     & 0.920 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Findings.}
+Degradation is essentially absent below $\lambda = 1.0$, then plateaus at
+Recall@1 = 0.920 for all $\lambda \geq 1.0$.
+This plateau reflects the signal strength in our synthetic setup: once the
+attention weight at the middle drops below the signal-to-noise threshold, further
+increases in $\lambda$ cannot worsen performance because noise alone accounts for
+the remaining errors.
+Importantly, this plateau means that the magnitude of our main result
+(Recall@1 $\approx$ 0.90--0.92 for FC-B1 at non-boundary positions) is
+\emph{robust} to the exact value of $\lambda \geq 1.0$ chosen to calibrate the
+simulation.
+
+\subsection{Variance and Statistical Reliability}
+
+With $T = 200$ binary trials per cell, the 95\% confidence interval for a
+proportion $\hat{p}$ is approximately $\hat{p} \pm 1.96\sqrt{\hat{p}(1-\hat{p})/T}$.
+For $\hat{p} = 0.90$: CI $= [0.858, 0.942]$.
+For $\hat{p} = 1.00$: CI $= [1.000, 1.000]$ (degenerate; no failures were
+observed in 200 trials for any chunking method at any position).
+The gap between FC-B1 and the chunking methods at the Early/Middle positions
+is therefore statistically significant at the 95\% level.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Analysis and Discussion}
+\label{sec:discussion}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Why Chunking Recovers Recall}
+
+The fundamental reason all three chunking strategies outperform the full-context
+baseline is that they reduce the \emph{effective} $N$ over which
+Equation~\ref{eq:attn} is applied.
+In the chunked sequential method, $N = W = 5$ within each window; the evidence
+chunk can appear at most at position 4 within its window (the ``end'' of the
+window), and the worst-case weight is $1 - 0.8 \cdot \sin^2(\pi \cdot 4/4) = 1.0$
+(also a boundary).
+In the hierarchical method, the fine-pass operates on 5-chunk windows with
+$\lambda_\text{fine} = 0.25$, giving a worst-case middle weight of $1 - 0.25 = 0.75$—
+still high enough to dominate the noise.
+
+This confirms the theoretical account proposed by Liu \emph{et al.}~\cite{liu2023lost}
+and echoed in RAG surveys~\cite{gao2023retrieval}: short contexts are simply
+easier for the retrieval mechanism to traverse, regardless of the retriever's
+implementation details.
+
+\subsection{The Chunk-Boundary Problem}
+
+The initial experiment (v1, using non-overlapping windows of size 5) revealed
+an interesting edge case: for window sizes 3 and 7, recall at the middle dropped
+to 0.08 (from 1.00 for sizes 2, 5, and 10).
+Post-hoc analysis confirmed a \emph{chunk-boundary effect}: when the evidence
+chunk sits at the boundary between two non-overlapping windows, the first window
+truncates the evidence and the second window's context starts \emph{after} the
+key signal tokens.
+The overlapping-chunks method (OC-B3) with stride 2 fully addresses this:
+every chunk appears in at least two windows, ensuring that the signal tokens
+appear near the \emph{start} of at least one window.
+This is a nuanced failure mode not discussed by Liu \emph{et al.} and
+represents a novel finding of this study.
+
+\subsection{Limitations}
+
+\paragraph{Simulation vs.\ real LLM.}
+Our attention-decay model is a first-order approximation calibrated to published
+results, not a measurement of any specific model.
+Real LLMs are autoregressive; their attention patterns depend on the entire
+sequence of previously processed tokens, not just position.
+Future work should validate these findings with API-accessible LLMs using
+controlled needle-in-a-haystack prompts.
+
+\paragraph{Synthetic data.}
+Our signal tokens are unique and high-contrast.
+In real research synthesis, evidence may be semantically similar to surrounding
+text (e.g., a cited figure surrounded by discussion of the same topic), making
+retrieval harder for all methods.
+Repeating this experiment with dense retrievers (bi-encoders) on real academic
+datasets (NarrativeQA, QuALITY, SCROLLS) would strengthen external validity.
+
+\paragraph{No latency or cost modelling.}
+Chunked methods make multiple retrieval calls, which incurs higher latency and
+API cost.
+A practical deployment trade-off analysis is left for future work.
+
+\subsection{Implications for Research Synthesis Systems}
+
+The results have direct practical implications.
+A research assistant system that ingests a full 50-page survey article in a
+single LLM call and asks ``What did Liu et al.\ find about middle-passage
+retrieval?'' may reliably fail if the cited study appears on pages 20--30.
+Replacing the single-pass ingestion with a hierarchical retrieval layer—coarse
+section-level filtering followed by fine paragraph-level re-ranking—would
+recover this recall at a modest computational cost.
+The H2P method demonstrated here is an existence proof that such recovery is
+achievable even with simple BoW scoring.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Human--AI Collaboration Log}
+\label{sec:ai}
+% ─────────────────────────────────────────────────────────────────────────────
+
+This section documents the AI tools used, following the transparency requirements
+of the course assignment.
+
+\begin{enumerate}
+  \item \textbf{Research question formulation.}
+    The research question (Section~\ref{sec:rq}) was derived from my own reading
+    of the five primary sources cited in Paper~1.
+    AI was used to check whether the question was sufficiently narrow and
+    experimentally testable (Prompt: ``Is this question tractable with a
+    compute-budget-free Python simulation?'').
+    AI confirmed feasibility; the question itself was not generated by AI.
+
+  \item \textbf{Attention-decay equation.}
+    I specified that I wanted a U-shaped curve with boundary weights of 1.0 and
+    a user-controllable depth.
+    AI suggested the $\sin^2$ parameterisation.
+    I independently verified that it matches the shape reported in Liu et al.\
+    Figure~2 (U-shaped with ~20 pp drop) by computing values at five positions
+    and cross-checking with the reported numbers.
+    The final equation was written by me; the shape suggestion came from AI.
+
+  \item \textbf{Code scaffolding.}
+    Initial Python scaffold was generated with AI assistance (vibe coding).
+    I verified, debugged, and rewrote approximately 60\% of the code, including:
+    the trial-seeding formula, the overlapping-window stride logic, the two-pass
+    hierarchical method, and the CSV output format.
+    All bugs introduced by AI (e.g., off-by-one error in chunk-boundary indexing)
+    were caught by running the code and inspecting the v1 ablation anomaly.
+
+  \item \textbf{Paper writing.}
+    Section drafts were written by me.
+    AI was used to suggest sentence-level rephrasing in two paragraphs of the
+    Introduction and to verify that the LaTeX table syntax compiled correctly.
+    All claims, numbers, and analysis are my own.
+
+  \item \textbf{Reference management.}
+    BibTeX entries were checked against ACM DL and arXiv DOIs manually.
+    AI was not used to fabricate references.
+\end{enumerate}
+
+\noindent\textbf{Decision ownership statement.}
+Every technical decision in this paper—choice of decay function, window size,
+stride, number of trials, evidence positions, and interpretation of results—was
+made by the author with reasoning documented in the code comments and in this
+section.
+AI output was treated as a suggestion requiring verification, not as authority.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Conclusion}
+\label{sec:conclusion}
+% ─────────────────────────────────────────────────────────────────────────────
+
+This paper presented a controlled, reproducible experimental investigation of
+context-window degradation in long-document research synthesis retrieval.
+Using a parameterised U-shaped attention-decay simulation calibrated to the
+lost-in-the-middle phenomenon, we confirmed that:
+\begin{enumerate}
+  \item Full-context single-pass retrieval exhibits significant recall degradation
+        (~10 pp) when evidence is placed at non-boundary positions (H1 confirmed).
+  \item All three chunking-based strategies—non-overlapping, overlapping, and
+        hierarchical two-pass—fully recover this recall at every position (H2 confirmed).
+  \item Degradation saturates above an attention-decay strength threshold of 1.0,
+        making the main result robust to the exact calibration chosen.
+  \item Non-overlapping chunking introduces a chunk-boundary failure mode that
+        overlapping and hierarchical methods avoid—a novel finding not previously
+        documented in the literature.
+\end{enumerate}
+
+The practical takeaway is straightforward: research synthesis systems should
+not rely on monolithic full-context ingestion.
+Even simple sliding-window chunking—implementable in tens of lines of Python—
+eliminates positional retrieval failures.
+Hierarchical two-pass retrieval, while equally effective in this controlled
+setting, provides an additional degree of freedom (the coarse filter) that may
+generalise better to noisy real-world documents where distractors partially
+match the query.
+
+\paragraph{Future work.}
+Validating these findings with real LLM API calls (GPT-4, Gemini, Claude),
+dense bi-encoder retrievers, and natural academic texts (SCROLLS benchmark)
+are the most important next steps.
+Investigating the interaction between decay strength and document length—
+specifically whether the plateau persists at $C \gg 20$—is a secondary priority.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section*{Reproducibility Statement}
+% ─────────────────────────────────────────────────────────────────────────────
+
+All results in this paper are reproduced by running:
+\begin{lstlisting}[language=bash]
+git clone https://github.com/mayankwaila/context-window-degradation
+cd context-window-degradation
+python3 experiment_v2.py
+\end{lstlisting}
+No external dependencies beyond the Python 3.8+ standard library are required.
+The script writes \path{results_v2.csv}, \path{ablation_strength.csv},
+and \path{config_v2.json} to the working directory.
+All random seeds, hyper-parameters, and output file paths are listed in
+\path{config_v2.json}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,14 @@
+# Git: ignore compiled LaTeX and Python cache
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf
+__pycache__/
+*.pyc
+.DS_Store
