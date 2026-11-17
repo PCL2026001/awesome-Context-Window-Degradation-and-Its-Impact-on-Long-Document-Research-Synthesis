@@ -13,14 +13,14 @@
   ylabel={Recall@1},
   ymin=0.80, ymax=1.02,
   xtick={1,2,3,4,5},
-  xticklabels={Start\\(0\%),Early\\(25\%),Middle\\(50\%),Late\\(75\%),End\\(100\%)},
-  legend style={at={(0.5,-0.28)}, anchor=north, legend columns=2,
+  xticklabels={Start (0\%),Early (25\%),Middle (50\%),Late (75\%),End (100\%)},
+  xticklabel style={font=\scriptsize, rotate=30, anchor=east},
+  legend style={at={(0.5,-0.35)}, anchor=north, legend columns=2,
                 font=\footnotesize, draw=none},
   grid=major, grid style={gray!25},
   tick label style={font=\footnotesize},
   label style={font=\footnotesize},
   ymajorgrids=true,
-  cycle list name=color list,
 ]
 \addplot[color=red!70!black, mark=square*, solid, line width=1.2pt,
   mark size=2.5pt] coordinates {(1,1.0) (2,0.9) (3,0.905) (4,1.0) (5,1.0)};
@@ -31,7 +31,7 @@
 \addplot[color=teal!80!black, mark=diamond*, dotted, line width=1.2pt,
   mark size=2.5pt] coordinates {(1,1.0) (2,1.0) (3,1.0) (4,1.0) (5,1.0)};
 \addlegendentry{Overlapping Chunks B3}
-\addplot[color=green!50!black, mark=pentagon*, densely dashdotted, line width=1.2pt,
+\addplot[color=green!50!black, mark=o, densely dashdotted, line width=1.2pt,
   mark size=2.5pt] coordinates {(1,1.0) (2,1.0) (3,1.0) (4,1.0) (5,1.0)};
 \addlegendentry{Hierarchical 2-Pass}
 \end{axis}
