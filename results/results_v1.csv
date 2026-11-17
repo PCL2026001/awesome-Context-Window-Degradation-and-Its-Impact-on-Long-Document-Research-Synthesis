@@ -1,0 +1,16 @@
+position_idx,position_label,evidence_chunk,method,recall_at_1,num_trials
+0,Start (0%),0,Full-Context (Baseline 1),1.0,100
+0,Start (0%),0,Chunked Sequential (Baseline 2),1.0,100
+0,Start (0%),0,Hierarchical (Proposed),1.0,100
+1,Early (25%),5,Full-Context (Baseline 1),0.11,100
+1,Early (25%),5,Chunked Sequential (Baseline 2),1.0,100
+1,Early (25%),5,Hierarchical (Proposed),1.0,100
+2,Middle (50%),10,Full-Context (Baseline 1),0.02,100
+2,Middle (50%),10,Chunked Sequential (Baseline 2),1.0,100
+2,Middle (50%),10,Hierarchical (Proposed),1.0,100
+3,Late (75%),15,Full-Context (Baseline 1),1.0,100
+3,Late (75%),15,Chunked Sequential (Baseline 2),1.0,100
+3,Late (75%),15,Hierarchical (Proposed),1.0,100
+4,End (100%),19,Full-Context (Baseline 1),1.0,100
+4,End (100%),19,Chunked Sequential (Baseline 2),1.0,100
+4,End (100%),19,Hierarchical (Proposed),1.0,100

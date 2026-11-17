@@ -1,31 +1,54 @@
 # Context-Window Degradation: A Controlled Retrieval Experiment
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PCL2026001/awesome-Context-Window-Degradation-and-Its-Impact-on-Long-Document-Research-Synthesis/blob/main/PCL_Context_Window_Degradation_Experiment.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PCL2026001/awesome-Context-Window-Degradation-and-Its-Impact-on-Long-Document-Research-Synthesis/blob/main/notebooks/PCL_Context_Window_Degradation_Experiment.ipynb)
 
 **Author**: Mayank Waila  
 **Institute**: IIIT Allahabad, PCL Course  
-**Assignment**: PCL-02 — Implementation & Experimental Paper
+**Assignment**: AITR Lab 02 — Implementation & Experimental Research Paper
 
 ---
 
-## Repository Structure
+## Suggested Project Tree (AITR Lab 02 Structure)
 
-```
-.
-├── PCL_Context_Window_Degradation_Experiment.ipynb # Complete Google Colab notebook
-├── experiment.py          # v1 experiment (original design)
-├── experiment_v2.py       # v2 experiment (refined, used in paper)
-├── generate_figures.py    # script generating pgfplots TikZ figures
-├── figures.tex            # standalone TikZ/PGFPlots figures source
-├── figures_preamble.tex   # preamble for standalone figures
-├── paper.tex              # LaTeX source of the paper (ACM sigconf)
-├── references.bib         # BibTeX references
-├── results.csv            # v1 results
-├── results_v2.csv         # v2 results (all numbers in paper)
-├── ablation_strength.csv  # ablation over attention-decay strength
-├── ablation_window_size.csv # v1 ablation over window size
-├── config_v2.json         # all hyper-parameters for full reproduction
-└── README.md              # this file
+```text
+AITR_Lab02_Project/
+├── README.md               # Research question, protocol, and reproducibility guide
+├── requirements.txt        # Verified dependencies for execution and plotting
+├── configs/                # Frozen experimental settings and hyperparameters
+│   ├── config_v2.json      # Primary evaluation configuration
+│   ├── default_config.json # Canonical configuration specification
+│   └── README.md           # Parameter documentation
+├── data/                   # Data access protocols and benchmark definitions
+│   └── README.md           # Synthetic data generation and access rationale
+├── notebooks/              # Interactive exploration and verified runnable notebooks
+│   ├── PCL_Context_Window_Degradation_Experiment.ipynb
+│   └── README.md
+├── src/                    # Reusable modules, algorithms, and retrieval functions
+│   ├── __init__.py
+│   ├── attention.py        # Primacy-recency U-shaped attention decay formulation
+│   ├── data.py             # Synthetic haystack and evidence generation
+│   ├── retrievers.py       # Full-Context, Sequential, Overlapping, and Hierarchical
+│   └── metrics.py          # Recall@1, F1, and Wald confidence intervals
+├── scripts/                # Execution entrypoints for evaluation and figure generation
+│   ├── run_experiment.py   # Primary simulation runner (4,000 trials)
+│   ├── run_ablation.py     # Attention-decay parameter sensitivity ablation
+│   └── generate_figures.py # TikZ / Matplotlib figure generation
+├── results/                # Genuine metric files, logs, and generated figures
+│   ├── results_v2.csv      # Primary metric logs across positions and methods
+│   ├── ablation_strength.csv # Ablation results across lambda values
+│   ├── results_v1.csv      # Initial iteration benchmark logs
+│   ├── ablation_window_size.csv # Window size sensitivity logs
+│   ├── figures/            # Generated visual artifacts
+│   └── README.md           # Metric summary tables
+├── paper/                  # LaTeX source, bibliography, and compiled PDF
+│   ├── paper.tex           # ACM Sigconf format paper with embedded TikZ figures
+│   ├── references.bib      # BibTeX citations
+│   ├── figures.tex         # Standalone TikZ figures
+│   ├── figures_preamble.tex# PGFPlots preamble
+│   └── AI_Assisted_Research_Paper.pdf # Compiled paper document
+├── research_decisions.md   # Literature-to-experiment design decisions
+├── baseline_validation.md  # Reproduction checks, statistical tests, and deviations
+└── ai_assistance_log.md    # Significant prompts, AI assistance, and human verification
 ```
 
 ---
