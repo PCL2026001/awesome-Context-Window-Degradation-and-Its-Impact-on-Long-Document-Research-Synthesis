@@ -1,5 +1,7 @@
 # Context-Window Degradation: A Controlled Retrieval Experiment
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PCL2026001/awesome-Context-Window-Degradation-and-Its-Impact-on-Long-Document-Research-Synthesis/blob/main/PCL_Context_Window_Degradation_Experiment.ipynb)
+
 **Author**: Mayank Waila  
 **Institute**: IIIT Allahabad, PCL Course  
 **Assignment**: PCL-02 — Implementation & Experimental Paper
@@ -10,8 +12,12 @@
 
 ```
 .
+├── PCL_Context_Window_Degradation_Experiment.ipynb # Complete Google Colab notebook
 ├── experiment.py          # v1 experiment (original design)
 ├── experiment_v2.py       # v2 experiment (refined, used in paper)
+├── generate_figures.py    # script generating pgfplots TikZ figures
+├── figures.tex            # standalone TikZ/PGFPlots figures source
+├── figures_preamble.tex   # preamble for standalone figures
 ├── paper.tex              # LaTeX source of the paper (ACM sigconf)
 ├── references.bib         # BibTeX references
 ├── results.csv            # v1 results
@@ -34,6 +40,11 @@
 
 ## How to Reproduce
 
+### Option A: Google Colab (One-Click Interactive)
+Run the full simulation ($N=4,000$ retrievals), generate interactive tables, confidence interval analyses, and publication figures directly in browser:  
+👉 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PCL2026001/awesome-Context-Window-Degradation-and-Its-Impact-on-Long-Document-Research-Synthesis/blob/main/PCL_Context_Window_Degradation_Experiment.ipynb)
+
+### Option B: Local CLI Execution
 ```bash
 python3 experiment_v2.py
 ```
